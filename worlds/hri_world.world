@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>
+<!--
+  hri_world.world
+  ===============
+  A Gazebo Classic (gazebo11) world that extends the Limo "simple" arena with
+  a walking human actor.  The actor uses the built-in Gazebo "walk.dae" skin
+  (available in every gazebo11 installation) and follows a rectangular
+  waypoint loop around the arena.
+
+  The actor <scale> is set to 0.55 so the figure is realistically child-sized
+  (~0.9 m tall) and fits comfortably in the Limo depth-camera field of view at
+  2–4 m range.
+-->
+<sdf version="1.7">
+  <world name="hri_world">
+
+    <!-- ==================  Lighting  ================== -->
+    <light name="sun" type="directional">
+      <cast_shadows>0</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- ==================  Ground plane  ================== -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode><mu>100</mu><mu2>50</mu2></ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ==================  Physics / scene  ================== -->
+    <gravity>0 0 -9.8</gravity>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <wind/>
+
+    <!-- ==================  Walls / obstacles  ================== -->
+    <!-- Simple boundary walls so the robot stays inside the arena -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 5 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/White</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -5 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/White</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_east">
+      <static>true</static>
+      <pose>5 0 0.5 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/White</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-5 0 0.5 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/White</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ==================  Walking Human Actor  ================== -->
+    <!--
+      The actor uses the Gazebo built-in "walk.dae" animated mesh.
+      Scale 0.55 → approx 0.9 m tall (child-sized) so the Limo camera
+      can clearly detect it at 2–4 m range without the figure filling
+      the entire frame.
+
+      The <script> block defines a rectangular patrol route:
+        A(-3, -3)  →  B(-3,  3)  →  C( 3,  3)  →  D( 3, -3)  →  back to A
+      trajectory_type "cyclic" makes the loop repeat indefinitely.
+    -->
+    <actor name="walking_human">
+      <skin>
+        <filename>walk.dae</filename>
+        <scale>0.55</scale>
+      </skin>
+      <animation name="walking">
+        <filename>walk.dae</filename>
+        <scale>1.0</scale>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <script>
+        <loop>true</loop>
+        <delay_start>0.0</delay_start>
+        <auto_start>true</auto_start>
+        <trajectory id="0" type="walking">
+          <!-- Waypoint format: <time> seconds since start, <pose> x y z roll pitch yaw -->
+          <waypoint><time>0.0</time>  <pose>-3.0 -3.0 0 0 0  1.5708</pose></waypoint>
+          <waypoint><time>8.0</time>  <pose>-3.0  3.0 0 0 0  1.5708</pose></waypoint>
+          <waypoint><time>8.5</time>  <pose>-3.0  3.0 0 0 0  0.0</pose></waypoint>
+          <waypoint><time>16.5</time> <pose> 3.0  3.0 0 0 0  0.0</pose></waypoint>
+          <waypoint><time>17.0</time> <pose> 3.0  3.0 0 0 0 -1.5708</pose></waypoint>
+          <waypoint><time>25.0</time> <pose> 3.0 -3.0 0 0 0 -1.5708</pose></waypoint>
+          <waypoint><time>25.5</time> <pose> 3.0 -3.0 0 0 0  3.1416</pose></waypoint>
+          <waypoint><time>33.5</time> <pose>-3.0 -3.0 0 0 0  3.1416</pose></waypoint>
+          <waypoint><time>34.0</time> <pose>-3.0 -3.0 0 0 0  1.5708</pose></waypoint>
+        </trajectory>
+      </script>
+    </actor>
+
+  </world>
+</sdf>
