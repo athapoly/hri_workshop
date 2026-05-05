@@ -32,6 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'human_detector = hri_workshop.human_detector:main',
+            'proxemic_follower = hri_workshop.proxemic_follower:main',
         ],
     },
 )
